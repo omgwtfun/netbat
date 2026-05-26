@@ -12,6 +12,7 @@ Parse JunOS hierarchical configs and ask questions about reachability, zone memb
 - **Zone lookup** — maps any IP to its security zone based on interface subnet membership
 - **Shadowed rule detection** — finds policy rules that can never be evaluated because an earlier catch-all precedes them
 - **Interface IP inventory** — lists all configured subnets across all interfaces
+- **CLI** — four subcommands with human-readable and `--json` output, usable in scripts
 
 ## Installation
 
@@ -21,7 +22,35 @@ pip install -e ".[dev]"   # includes pytest for running tests
 
 Requires Python 3.9+. No third-party runtime dependencies.
 
-## Quick start
+## CLI quick start
+
+```bash
+# Is HTTP from a trust host to an external IP permitted?
+netbat reachability fw.conf 192.168.1.50 203.0.113.2 --port 80
+# Action:  PERMIT
+# From:    trust
+# To:      untrust
+# Rule:    allow-http
+
+# Which zone is this IP in?
+netbat zone-of fw.conf 203.0.113.2
+# untrust
+
+# Are any policy rules unreachable?
+netbat shadowed fw.conf
+# trust → untrust: rule 'never-reached' is shadowed
+
+# List all configured subnets
+netbat interfaces fw.conf
+# ge-0/0/0.0     192.168.1.0/24
+# ge-0/0/1.0     203.0.113.0/30
+
+# All subcommands accept --json for scripting
+netbat reachability fw.conf 192.168.1.50 203.0.113.2 --port 80 --json
+# {"action": "permit", "from_zone": "trust", "to_zone": "untrust", "matching_rule": "allow-http"}
+```
+
+## Python API quick start
 
 ```python
 from netbat.builder import build_network_config
@@ -84,13 +113,24 @@ Returns rules that follow a catch-all rule (source `any`, destination `any`, app
 
 Returns all configured IPv4 subnets, one entry per address statement.
 
+## CLI reference
+
+```
+netbat reachability CONFIG SRC DST [--protocol PROTO] [--port PORT] [--json]
+netbat zone-of      CONFIG IP                                         [--json]
+netbat shadowed     CONFIG                                            [--json]
+netbat interfaces   CONFIG                                            [--json]
+```
+
+Exit code is `0` on success and `1` when the config file cannot be opened or parsed.
+
 ## Running tests
 
 ```bash
 pytest
 ```
 
-71 tests covering the tokenizer, parser, config builder, domain models, and all four analysis functions.
+102 tests covering the tokenizer, parser, config builder, domain models, all four analysis functions, and all four CLI subcommands.
 
 ## Project layout
 
@@ -102,12 +142,14 @@ netbat/
 │                       #   AddressBook, SecurityPolicy, PolicyRule, Application, …
 ├── applications.py     # built-in junos-* application definitions
 ├── builder.py          # AST → NetworkConfig
-└── analysis.py         # zone_of_ip, reachability, shadowed_rules, interface_ips
+├── analysis.py         # zone_of_ip, reachability, shadowed_rules, interface_ips
+└── cli.py              # argparse CLI (netbat entry point)
 tests/
 ├── test_parser.py
 ├── test_models.py
 ├── test_builder.py
-└── test_analysis.py
+├── test_analysis.py
+└── test_cli.py
 ```
 
 ## Limitations and future work
