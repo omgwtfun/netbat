@@ -1,0 +1,14 @@
+[package]
+name = "netbat"
+version = "0.1.0"
+edition = "2021"
+description = "Pure Rust network configuration analysis for Juniper firewalls"
+license = "Apache-2.0"
+
+[[bin]]
+name = "netbat"
+path = "src/main.rs"
+
+[lib]
+name = "netbat"
+path = "src/lib.rs"

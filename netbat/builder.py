@@ -119,9 +119,6 @@ def _parse_address_book(book_stmts: List[Statement]) -> AddressBook:
         if not set_args:
             continue
         set_name = set_args[0]
-        members = [a[1][0] for a in _find(_child_stmts((None, [], set_children)), "address")
-                   if a[1]]
-        # Rebuild helper: set_children is the raw children list
         member_stmts = set_children if set_children else []
         members = [s[1][0] for s in member_stmts if s[0] == "address" and s[1]]
         book.address_sets[set_name] = AddressSet(set_name, members)
