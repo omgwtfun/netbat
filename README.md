@@ -4,6 +4,8 @@ A pure-Python network configuration analysis tool for Juniper firewalls, inspire
 
 Parse JunOS hierarchical configs and ask questions about reachability, zone membership, and policy correctness — no Java, no Docker, no external dependencies.
 
+> A dependency-free **Rust port** with the same CLI and analysis behaviour lives in [`rust/`](rust/README.md).
+
 ## Features
 
 - **Parser** — tokenizes and parses JunOS hierarchical config format into a structured AST
